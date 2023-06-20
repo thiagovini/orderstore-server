@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+
+  postgres:
+    image: sameersbn/postgresql:10-1
+    restart: always
+    environment:
+      DB_NAME: orderstore
+      DB_USER: postgres
+      DB_PASS: postgres
+      PG_PASSWORD: postgres
+    ports:
+      - 5432:5432
