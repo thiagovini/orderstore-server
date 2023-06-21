@@ -31,7 +31,7 @@ public class User implements Serializable {
     private String name;
 
     @Column(name = "contact-number")
-    private String contactName;
+    private String contactNumber;
 
     @Column(name = "email")
     private String email;
@@ -41,7 +41,6 @@ public class User implements Serializable {
 
     @Column(name = "status")
     private String status;
-
     @Column(name = "role")
     private String role;
 }

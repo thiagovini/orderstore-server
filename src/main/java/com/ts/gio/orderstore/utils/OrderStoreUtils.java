@@ -8,6 +8,6 @@ public class OrderStoreUtils {
     public OrderStoreUtils(){}
 
     public static ResponseEntity<String> getResponseEntity(String responseMessage, HttpStatus status) {
-        return new ResponseEntity<String>("{\"message\":\""+ responseMessage + "\"", status);
+        return new ResponseEntity<String>("{\"message\":\""+ responseMessage + "\"}", status);
     }
 }

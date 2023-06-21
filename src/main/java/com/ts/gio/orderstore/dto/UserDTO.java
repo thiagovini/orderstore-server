@@ -9,28 +9,15 @@ import lombok.Data;
 public class UserDTO {
 
     private String name;
-    private String contactName;
+    private String contactNumber;
     private String email;
     private String password;
 
-    public String getName() {
-        return name;
-    }
-
-    public String getContactName() {
-        return contactName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
     public User toUser() {
-        //TODO
-        return null;
+        return User.builder().name(this.name).contactNumber(this.contactNumber).email(this.email).password(this.password).build();
+    }
+
+    public String toString() {
+        return this.name + ", " + this.contactNumber + ", " + this.email + ", " + this.password;
     }
 }
