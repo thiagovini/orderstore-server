@@ -11,4 +11,6 @@ public interface UserService {
     Logger logger = Logger.getLogger(String.valueOf(UserService.class));
 
     ResponseEntity<String> singUp(UserDTO userDTO);
+
+    ResponseEntity<Boolean> validatePassword(String username, String password);
 }

@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.io.Serializable;
 
@@ -43,4 +44,5 @@ public class User implements Serializable {
     private String status;
     @Column(name = "role")
     private String role;
+
 }

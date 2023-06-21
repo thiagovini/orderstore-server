@@ -8,9 +8,9 @@ import lombok.Data;
 @Data
 public class UserDTO {
 
-    private String name;
-    private String contactNumber;
-    private String email;
+    private final String name;
+    private final String contactNumber;
+    private final String email;
     private String password;
 
     public User toUser() {
@@ -20,4 +20,5 @@ public class UserDTO {
     public String toString() {
         return this.name + ", " + this.contactNumber + ", " + this.email + ", " + this.password;
     }
+
 }
