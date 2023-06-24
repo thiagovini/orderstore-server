@@ -1,9 +1,11 @@
 package com.ts.gio.orderstore.service.impl;
 
+import com.ts.gio.orderstore.config.JwtAuthenticationFilter;
 import com.ts.gio.orderstore.config.JwtService;
 import com.ts.gio.orderstore.constants.OrderStoreConstants;
 import com.ts.gio.orderstore.controller.request.AuthenticationRequest;
 import com.ts.gio.orderstore.controller.request.RegisterRequest;
+import com.ts.gio.orderstore.controller.response.UserResponse;
 import com.ts.gio.orderstore.entity.User;
 import com.ts.gio.orderstore.repository.UserRepository;
 import com.ts.gio.orderstore.service.UserService;
@@ -16,7 +18,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +33,8 @@ public class UserServiceImpl implements UserService {
 
     private final AuthenticationManager authManager;
 
+    private final JwtAuthenticationFilter jwtAuthFilter;
+
     @Override
     public ResponseEntity<String> register(RegisterRequest request) {
         logger.info("Inside signup{" + request.toString() + "}");
@@ -40,7 +45,7 @@ public class UserServiceImpl implements UserService {
                     request.setPassword(encoder.encode(request.getPassword()));
                     User userFromRequest = request.toUser();
                     userRepository.save(userFromRequest);
-                    var jwtToken = jwtService.generateToken(userFromRequest);
+                    var jwtToken = jwtService.generateToken(userFromRequest, userFromRequest.toRoleMap());
                     return OrderStoreUtils.getResponseEntity(OrderStoreConstants.SUCCESSFULLY_REGISTERED, HttpStatus.CREATED, jwtToken);
                 } else {
                     return OrderStoreUtils.getResponseEntity(OrderStoreConstants.EMAIL_ALREADY_EXIST, HttpStatus.BAD_REQUEST);
@@ -64,12 +69,32 @@ public class UserServiceImpl implements UserService {
                     )
             );
             User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
-            var jwtToken = jwtService.generateToken(user);
+            if (!user.isStatus()) {
+                return OrderStoreUtils.getResponseEntity(OrderStoreConstants.USER_NOT_ACTIVE, HttpStatus.UNAUTHORIZED);
+            }
+            var jwtToken = jwtService.generateToken(user, user.toRoleMap());
             return OrderStoreUtils.getResponseEntity(OrderStoreConstants.USER_VALIDATED, HttpStatus.OK, jwtToken);
         } catch (Exception exception) {
             logger.info(OrderStoreConstants.SOMETHING_WENT_WRONG + "{" + exception.getMessage() +"}");
         }
         return OrderStoreUtils.getResponseEntity(OrderStoreConstants.INVALID_USER, HttpStatus.UNAUTHORIZED);
+    }
+
+    @Override
+    public ResponseEntity<List<UserResponse>> getAllUser() {
+        try {
+            if (jwtAuthFilter.isAdmin()) {
+                List<UserResponse> userResponseList =  userRepository
+                        .findAll()
+                        .stream()
+                        .map(User::toUserResponse)
+                        .collect(Collectors.toList());
+                return ResponseEntity.status(HttpStatus.OK).body(userResponseList);
+            }
+        } catch (Exception exception){
+            logger.info(OrderStoreConstants.SOMETHING_WENT_WRONG + "{" + exception.getMessage() +"}");
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).eTag(OrderStoreConstants.UNAUTHORIZED_USER).body(new ArrayList<>());
     }
 
 }

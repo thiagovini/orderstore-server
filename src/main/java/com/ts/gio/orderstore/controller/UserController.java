@@ -1,16 +1,15 @@
 package com.ts.gio.orderstore.controller;
 
+import com.ts.gio.orderstore.controller.response.UserResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@RequestMapping(path = "api/demo")
-public interface DemoController {
+import java.util.List;
 
-    @GetMapping
-    ResponseEntity<String> sayHello();
+@RequestMapping(path = "api/user")
+public interface UserController {
 
     @GetMapping(path = "/getAllUser")
-    ResponseEntity<String> getAllUser();
+    ResponseEntity<List<UserResponse>> getAllUser();
 }
-

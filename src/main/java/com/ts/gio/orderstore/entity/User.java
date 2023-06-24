@@ -1,5 +1,6 @@
 package com.ts.gio.orderstore.entity;
 
+import com.ts.gio.orderstore.controller.response.UserResponse;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,7 +13,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Entity
@@ -30,13 +33,16 @@ public class User implements UserDetails {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "name")
-    private String name;
+    @Column(name = "first_name")
+    private String firstName;
+
+    @Column(name = "second_name")
+    private String secondName;
 
     @Column(name = "username")
     private String username;
 
-    @Column(name = "contact-number")
+    @Column(name = "contact_number")
     private String contactNumber;
 
     @Column(name = "email")
@@ -46,7 +52,7 @@ public class User implements UserDetails {
     private String password;
 
     @Column(name = "status")
-    private String status;
+    private boolean status;
 
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
@@ -85,5 +91,24 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public UserResponse toUserResponse() {
+        return UserResponse.builder()
+                .id(this.id)
+                .firstName(this.firstName)
+                .secondName(this.secondName)
+                .username(this.username)
+                .contactNumber(this.contactNumber)
+                .email(this.email)
+                .role(this.role)
+                .status(this.status)
+                .build();
+    }
+
+    public Map<String, String> toRoleMap() {
+        Map<String, String> role = new HashMap<>();
+        role.put("role", this.getRole().toString());
+        return role;
     }
 }

@@ -10,14 +10,12 @@ import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
 @Service
 public class JwtService {
 
-//    private static final String SECRET_KEY = "5539608432fddcfe6e6e089f41d6d41a4e34ec68f4fe87af9ed7c939ed857d396";
     private static final String SECRET_KEY = "492e4b3d5edb1ddca552ed90af9fe2bf1b7c24c3270ad8836a71961f728a2adc";
 
 
@@ -25,11 +23,11 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
+    public String generateToken(UserDetails userDetails, Map<String, String> role) {
+        return generateToken(role, userDetails);
     }
 
-    public String generateToken(Map<String, Object> extractClaims, UserDetails userDetails) {
+    public String generateToken(Map<String, String> extractClaims, UserDetails userDetails) {
         return Jwts
                 .builder()
                 .setClaims(extractClaims)
@@ -58,7 +56,7 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
-    private Claims extractAllClaims(String token){
+    public Claims extractAllClaims(String token){
         return Jwts
                 .parserBuilder()
                 .setSigningKey(getSigningKey())

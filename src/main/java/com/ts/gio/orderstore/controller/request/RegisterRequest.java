@@ -13,7 +13,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RegisterRequest {
 
-    private String name;
+    private String firstName;
+    private String secondName;
     private String username;
     private String contactNumber;
     private String email;
@@ -21,21 +22,23 @@ public class RegisterRequest {
 
     public User toUser() {
         return User.builder()
-                .name(this.name)
+                .firstName(this.firstName)
+                .secondName(this.secondName)
                 .username(this.username)
                 .contactNumber(this.contactNumber)
                 .email(this.email)
                 .password(this.password)
+                .status(false)
                 .role(Role.USER)
                 .build();
     }
 
     public String toString() {
-        return this.name + ", " + this.contactNumber + ", " + this.email + ", " + this.password;
+        return this.firstName + " " + this.secondName + ", " + this.contactNumber + ", " + this.email + ", " + this.password;
     }
 
     public boolean validateRegister(){
-        return !this.name.isBlank() && !this.username.isBlank() && !this.contactNumber.isBlank() && !this.email.isBlank()
+        return !this.firstName.isBlank() && !this.secondName.isBlank() && !this.username.isBlank() && !this.contactNumber.isBlank() && !this.email.isBlank()
                 && !this.password.isBlank();
 
     }

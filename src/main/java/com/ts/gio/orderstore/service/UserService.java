@@ -2,11 +2,10 @@ package com.ts.gio.orderstore.service;
 
 import com.ts.gio.orderstore.controller.request.AuthenticationRequest;
 import com.ts.gio.orderstore.controller.request.RegisterRequest;
-import com.ts.gio.orderstore.controller.response.AuthenticationResponse;
-import com.ts.gio.orderstore.dto.UserDTO;
+import com.ts.gio.orderstore.controller.response.UserResponse;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Map;
+import java.util.List;
 import java.util.logging.Logger;
 
 public interface UserService {
@@ -16,4 +15,6 @@ public interface UserService {
     ResponseEntity<String> register(RegisterRequest request);
 
     ResponseEntity<String> authenticate(AuthenticationRequest request);
+
+    ResponseEntity<List<UserResponse>> getAllUser();
 }
