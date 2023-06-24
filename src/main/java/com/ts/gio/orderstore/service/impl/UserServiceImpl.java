@@ -1,37 +1,47 @@
 package com.ts.gio.orderstore.service.impl;
 
+import com.ts.gio.orderstore.config.JwtService;
 import com.ts.gio.orderstore.constants.OrderStoreConstants;
-import com.ts.gio.orderstore.dto.UserDTO;
+import com.ts.gio.orderstore.controller.request.AuthenticationRequest;
+import com.ts.gio.orderstore.controller.request.RegisterRequest;
 import com.ts.gio.orderstore.entity.User;
 import com.ts.gio.orderstore.repository.UserRepository;
 import com.ts.gio.orderstore.service.UserService;
 import com.ts.gio.orderstore.utils.OrderStoreUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.Objects;
+
+import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    @Autowired
-    private PasswordEncoder encoder;
+    private final PasswordEncoder encoder;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    private final JwtService jwtService;
+
+    private final AuthenticationManager authManager;
 
     @Override
-    public ResponseEntity<String> singUp(UserDTO userDTO) {
-        logger.info("Inside signup{" + userDTO.toString() + "}");
+    public ResponseEntity<String> register(RegisterRequest request) {
+        logger.info("Inside signup{" + request.toString() + "}");
         try {
-            if (validateSignUp(userDTO)){
-                User user = userRepository.findByEmail(userDTO.getEmail());
-                if (Objects.isNull(user)){
-                    userDTO.setPassword(encoder.encode(userDTO.getPassword()));
-                    userRepository.save(userDTO.toUser());
-                    return OrderStoreUtils.getResponseEntity(OrderStoreConstants.SUCCESSFULLY_REGISTERED, HttpStatus.CREATED);
+            if (request.validateRegister()) {
+                Optional<User> user = userRepository.findByEmail(request.getEmail());
+                if (user.isEmpty()) {
+                    request.setPassword(encoder.encode(request.getPassword()));
+                    User userFromRequest = request.toUser();
+                    userRepository.save(userFromRequest);
+                    var jwtToken = jwtService.generateToken(userFromRequest);
+                    return OrderStoreUtils.getResponseEntity(OrderStoreConstants.SUCCESSFULLY_REGISTERED, HttpStatus.CREATED, jwtToken);
                 } else {
                     return OrderStoreUtils.getResponseEntity(OrderStoreConstants.EMAIL_ALREADY_EXIST, HttpStatus.BAD_REQUEST);
                 }
@@ -45,23 +55,21 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<Boolean> validatePassword(String email, String password) {
-        User user = userRepository.findByEmail(email);
-        if (user == null){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
+    public ResponseEntity<String> authenticate(AuthenticationRequest request) {
+        try {
+            authManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+            User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+            var jwtToken = jwtService.generateToken(user);
+            return OrderStoreUtils.getResponseEntity(OrderStoreConstants.USER_VALIDATED, HttpStatus.OK, jwtToken);
+        } catch (Exception exception) {
+            logger.info(OrderStoreConstants.SOMETHING_WENT_WRONG + "{" + exception.getMessage() +"}");
         }
-
-        boolean valid = encoder.matches(password, user.getPassword());
-
-        HttpStatus status = valid ? HttpStatus.OK: HttpStatus.UNAUTHORIZED;
-
-        return ResponseEntity.status(status).body(valid);
-
+        return OrderStoreUtils.getResponseEntity(OrderStoreConstants.INVALID_USER, HttpStatus.UNAUTHORIZED);
     }
 
-    private boolean validateSignUp(UserDTO userDTO){
-        return !userDTO.getName().isBlank() && !userDTO.getContactNumber().isBlank() && !userDTO.getEmail().isBlank()
-                && !userDTO.getPassword().isBlank();
-
-    }
 }
