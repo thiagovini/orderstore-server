@@ -1,5 +1,6 @@
 package com.ts.gio.orderstore.config;
 
+import com.ts.gio.orderstore.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -12,12 +13,14 @@ import java.security.Key;
 import java.util.Date;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.logging.Logger;
 
 @Service
 public class JwtService {
 
     private static final String SECRET_KEY = "492e4b3d5edb1ddca552ed90af9fe2bf1b7c24c3270ad8836a71961f728a2adc";
 
+    Logger logger = Logger.getLogger(String.valueOf(JwtService.class));
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);

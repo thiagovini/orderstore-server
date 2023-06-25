@@ -1,7 +1,9 @@
 package com.ts.gio.orderstore.service;
 
+import com.ts.gio.orderstore.controller.request.ActiveDisableRequest;
 import com.ts.gio.orderstore.controller.request.AuthenticationRequest;
 import com.ts.gio.orderstore.controller.request.RegisterRequest;
+import com.ts.gio.orderstore.controller.request.UpdateUserRequest;
 import com.ts.gio.orderstore.controller.response.UserResponse;
 import org.springframework.http.ResponseEntity;
 
@@ -17,4 +19,10 @@ public interface UserService {
     ResponseEntity<String> authenticate(AuthenticationRequest request);
 
     ResponseEntity<List<UserResponse>> getAllUser();
+
+    ResponseEntity<String> updateUser(UpdateUserRequest userRequest);
+
+    ResponseEntity<String> activeUser(ActiveDisableRequest activeDesableRequest);
+
+    ResponseEntity<String> disableUser(ActiveDisableRequest activeDesableRequest);
 }

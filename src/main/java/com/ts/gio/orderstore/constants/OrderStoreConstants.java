@@ -11,4 +11,8 @@ public class OrderStoreConstants {
     public static final String USER_NOT_ACTIVE = "The user doesn't active";
     public static final String USER_NOT_FOUND = "User not found";
     public static final String SUCCESSFULLY_REGISTERED = "Successfully registered.";
+    public static final String USER_UPDATED = "User updated";
+    public static final String USER_ACTIVATE = "User activate";
+    public static final String USER_DISABLE = "User disable";
+    public static final String USER_IS_NOT_ADMIN = "User is not admin";
 }

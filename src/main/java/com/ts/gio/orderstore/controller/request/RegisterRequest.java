@@ -28,7 +28,7 @@ public class RegisterRequest {
                 .contactNumber(this.contactNumber)
                 .email(this.email)
                 .password(this.password)
-                .status(false)
+                .active(false)
                 .role(Role.USER)
                 .build();
     }

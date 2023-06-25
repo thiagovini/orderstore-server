@@ -3,10 +3,13 @@ package com.ts.gio.orderstore.service.impl;
 import com.ts.gio.orderstore.config.JwtAuthenticationFilter;
 import com.ts.gio.orderstore.config.JwtService;
 import com.ts.gio.orderstore.constants.OrderStoreConstants;
+import com.ts.gio.orderstore.controller.request.ActiveDisableRequest;
 import com.ts.gio.orderstore.controller.request.AuthenticationRequest;
 import com.ts.gio.orderstore.controller.request.RegisterRequest;
+import com.ts.gio.orderstore.controller.request.UpdateUserRequest;
 import com.ts.gio.orderstore.controller.response.UserResponse;
 import com.ts.gio.orderstore.entity.User;
+import com.ts.gio.orderstore.exception.UserNotFoundException;
 import com.ts.gio.orderstore.repository.UserRepository;
 import com.ts.gio.orderstore.service.UserService;
 import com.ts.gio.orderstore.utils.OrderStoreUtils;
@@ -18,7 +21,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -69,7 +74,7 @@ public class UserServiceImpl implements UserService {
                     )
             );
             User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
-            if (!user.isStatus()) {
+            if (!user.isActive()) {
                 return OrderStoreUtils.getResponseEntity(OrderStoreConstants.USER_NOT_ACTIVE, HttpStatus.UNAUTHORIZED);
             }
             var jwtToken = jwtService.generateToken(user, user.toRoleMap());
@@ -96,5 +101,49 @@ public class UserServiceImpl implements UserService {
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).eTag(OrderStoreConstants.UNAUTHORIZED_USER).body(new ArrayList<>());
     }
+
+    @Override
+    public ResponseEntity<String> updateUser(UpdateUserRequest userRequest) {
+        try {
+            User user = userRepository.findById(userRequest.getId()).orElseThrow(UserNotFoundException::new);
+            user.updateUser(userRequest);
+            userRepository.save(user);
+            return OrderStoreUtils.getResponseEntity(OrderStoreConstants.USER_UPDATED, HttpStatus.OK);
+        } catch (UserNotFoundException exception) {
+            logger.info(OrderStoreConstants.USER_NOT_FOUND + "{" + exception.getMessage() +"}");
+        }
+        return OrderStoreUtils.getResponseEntity(OrderStoreConstants.USER_NOT_FOUND, HttpStatus.BAD_REQUEST);
+    }
+
+    @Override
+    public ResponseEntity<String> activeUser(ActiveDisableRequest activeDesableRequest) {
+        try {
+            if (jwtAuthFilter.isAdmin()) {
+                User user = userRepository.findById(activeDesableRequest.getId()).orElseThrow(UserNotFoundException::new);
+                user.activateUser();
+                userRepository.save(user);
+                return OrderStoreUtils.getResponseEntity(OrderStoreConstants.USER_ACTIVATE, HttpStatus.OK);
+            } else {
+                return OrderStoreUtils.getResponseEntity(OrderStoreConstants.USER_IS_NOT_ADMIN, HttpStatus.OK);
+            }
+        } catch (UserNotFoundException exception) {
+            logger.info(OrderStoreConstants.USER_NOT_FOUND + "{" + exception.getMessage() +"}");
+        }
+        return OrderStoreUtils.getResponseEntity(OrderStoreConstants.USER_NOT_FOUND, HttpStatus.BAD_REQUEST);
+    }
+
+    @Override
+    public ResponseEntity<String> disableUser(ActiveDisableRequest activeDesableRequest) {
+        try {
+            User user = userRepository.findById(activeDesableRequest.getId()).orElseThrow(UserNotFoundException::new);
+            user.disableUser();
+            userRepository.save(user);
+            return OrderStoreUtils.getResponseEntity(OrderStoreConstants.USER_DISABLE, HttpStatus.OK);
+        } catch (UserNotFoundException exception) {
+            logger.info(OrderStoreConstants.USER_NOT_FOUND + "{" + exception.getMessage() +"}");
+        }
+        return OrderStoreUtils.getResponseEntity(OrderStoreConstants.USER_NOT_FOUND, HttpStatus.BAD_REQUEST);
+    }
+
 
 }
